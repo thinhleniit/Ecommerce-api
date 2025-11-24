@@ -44,7 +44,10 @@ namespace EcommerceApi.Services
                     Name = v.Name,
                     Price = v.Price,
                     Currency = v.Currency,
-                    IsDefault = v.IsDefault
+                    IsDefault = v.IsDefault,
+                    ImageUrl = string.IsNullOrWhiteSpace(dto.ImageUrl)
+        ? "/uploads/default.png"
+        : dto.ImageUrl
                 });
             }
 

@@ -26,5 +26,8 @@ namespace EcommerceApi.DTO.Products
         public string Brand { get; set; } = default!;
 
         public List<CreateVariantDto> Variants { get; set; } = new();
+
+        [Url]
+        public string? ImageUrl { get; set; }
     }
 }

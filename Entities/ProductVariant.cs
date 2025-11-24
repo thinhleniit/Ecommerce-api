@@ -19,7 +19,7 @@ namespace EcommerceApi.Models
 
         public Inventory Inventory { get; set; } = default!;
 
-        public string ImageUrl { get; set; }
+        public string ImageUrl { get; set; } = "/uploads/default.png";
 
     }
 }
