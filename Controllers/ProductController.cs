@@ -38,6 +38,7 @@ namespace EcommerceApi.Controllers
 
             var product = new Product
             {
+                Id = Guid.NewGuid(),
                 Name = dto.Name,
                 Slug = dto.Slug,
                 Description = dto.Description,
@@ -49,6 +50,8 @@ namespace EcommerceApi.Controllers
             {
                 product.Variants.Add(new ProductVariant
                 {
+                    Id = Guid.NewGuid(),
+                    ProductId = product.Id,
                     Sku = v.Sku,
                     Name = v.Name,
                     Price = v.Price,
@@ -62,6 +65,7 @@ namespace EcommerceApi.Controllers
 
             return Created($"/api/products/{product.Id}", product.Id);
         }
+
 
         [AllowAnonymous]
         [HttpGet("{id}")]
@@ -85,6 +89,7 @@ namespace EcommerceApi.Controllers
                 Variants = product.Variants.Select(v => new VariantResponseDto
                 {
                     Id = v.Id,
+                    ProductId = v.ProductId,
                     Sku = v.Sku,
                     Name = v.Name,
                     Price = v.Price,
@@ -103,9 +108,14 @@ namespace EcommerceApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var product = await _db.Products.FindAsync(id);
-            if (product == null) return NotFound();
+            var product = await _db.Products
+                .Include(p => p.Variants)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
+            if (product == null)
+                return NotFound();
+
+            // =============== UPDATE PRODUCT ===============
             product.Name = dto.Name;
             product.Slug = dto.Slug;
             product.Description = dto.Description;
@@ -113,9 +123,43 @@ namespace EcommerceApi.Controllers
             product.Status = dto.Status!.Value;
             product.UpdatedAt = DateTime.UtcNow;
 
+            // =============== UPDATE VARIANTS ===============
+            var existingVariant = product.Variants.FirstOrDefault(v => v.IsDefault);
+
+            if (existingVariant != null)
+            {
+                var vDto = dto.Variants.First();
+
+                existingVariant.Name = vDto.Name;
+                existingVariant.Sku = vDto.Sku;
+                existingVariant.Price = vDto.Price;       
+                existingVariant.Currency = vDto.Currency;
+                existingVariant.IsDefault = vDto.IsDefault;
+                existingVariant.UpdatedAt = DateTime.UtcNow;
+            }
+
             await _db.SaveChangesAsync();
-            return Ok(product);
+
+            return Ok(new ProductDetailDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Slug = product.Slug,
+                Brand = product.Brand,
+                Status = product.Status.ToString(),
+                Variants = product.Variants.Select(v => new ProductVariantDto
+                {
+                    Id = v.Id,
+                    Sku = v.Sku,
+                    Name = v.Name,
+                    Price = v.Price,
+                    Currency = v.Currency,
+                    IsDefault = v.IsDefault,
+                    ImageUrl = v.ImageUrl
+                }).ToList()
+            });
         }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
@@ -181,6 +225,7 @@ namespace EcommerceApi.Controllers
                     Variants = p.Variants.Select(v => new VariantResponseDto
                     {
                         Id = v.Id,
+                        ProductId = v.ProductId,
                         Sku = v.Sku,
                         Name = v.Name,
                         Price = v.Price,
