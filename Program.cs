@@ -68,7 +68,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Redis Cache (IDistributedCache)
+// Redis Cache
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
@@ -76,7 +76,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 
 // Service
-builder.Services.AddScoped<CartService>();
+builder.Services.AddScoped<ICartService, RedisCartService>();
 builder.Services.AddScoped<ProductService>();
 
 
