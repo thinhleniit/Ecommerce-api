@@ -26,3 +26,18 @@ After authentication:
 Go to POST /api/products
 Add a sample product with variants
 If the product is created successfully, your API setup is complete.
+
+- How to Test This Project
+
+After starting both FE & API:
+
+1. Open the login page  
+2. Use one of the following demo accounts:
+
+**Admin**
+- Email: `admin@test.com`
+- Password: `123456`
+
+**Staff**
+- Email: `staff@test.com`
+- Password: `123456`
